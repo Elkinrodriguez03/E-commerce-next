@@ -1,0 +1,82 @@
+export interface Product {
+  id: number;
+  title: string;
+  price: number;
+  description: string;
+  category: string;
+  image: string;
+  rating?: {
+    rate: number;
+    count: number;
+  };
+}
+
+export interface CartItem extends Product {
+  quantity?: number;
+}
+
+export interface Order {
+  id: string;
+  date: string;
+  products: CartItem[];
+  totalProducts: number;
+  totalPrice: string;
+}
+
+export interface User {
+  email?: string;
+  name?: string;
+  password?: string;
+}
+
+export interface ShoppingCartContextType {
+  // Product Detail
+  isProductDetailOpen: boolean;
+  openProductDetail: () => void;
+  closeProductDetail: () => void;
+  productToShow: Product;
+  setProductToShow: (product: Product) => void;
+
+  // Shopping Cart
+  cartProducts: CartItem[];
+  setCartProducts: (products: CartItem[]) => void;
+  counter: number;
+  setCounter: (count: number) => void;
+  addProductsToCart: (event: React.MouseEvent, productData: Product) => void;
+  removeProductFromCart: (id: number) => void;
+
+  // Checkout Side Menu
+  isCheckoutSideMenuOpen: boolean;
+  openCheckoutSideMenu: () => void;
+  closeCheckoutSideMenu: () => void;
+
+  // Orders
+  order: Order[];
+  setOrder: (orders: Order[]) => void;
+  handleCheckout: () => void;
+
+  // Products
+  items: Product[] | undefined;
+  setItems: (items: Product[]) => void;
+  filteredItems: Product[] | undefined;
+  searchByTitle: string | undefined;
+  setSearchByTitle: (title: string | undefined) => void;
+  searchByCategory: string | undefined;
+  setSearchByCategory: (category: string | undefined) => void;
+
+  // Authentication
+  account: User;
+  setAccount: (account: User) => void;
+  signOut: boolean;
+  setSignOut: (signOut: boolean) => void;
+}
+
+export type SearchType = 'BY_TITLE' | 'BY_CATEGORY' | 'BY_TITLE_AND_CATEGORY';
+
+export interface LayoutProps {
+  children: React.ReactNode;
+}
+
+export interface CardProps {
+  data: Product;
+}
