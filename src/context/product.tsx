@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode, useCallback, useState } from 'react';
+import { createContext, ReactNode, useCallback, useState } from 'react';
 import { CartItem, Order, Product } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { useFilters } from '@/hooks/useFilters';
@@ -38,7 +38,7 @@ interface ProductContextType {
   closeCheckoutSideMenu: () => void;
 }
 
-const ProductContext = createContext<ProductContextType | undefined>(undefined);
+export const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 const defaultProduct: Product = {
   id: 0,
@@ -121,14 +121,6 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       {children}
     </ProductContext.Provider>
   );
-}
-
-export function useProductContext(): ProductContextType {
-  const context = useContext(ProductContext);
-  if (context === undefined) {
-    throw new Error('useProductContext must be used within a ProductProvider');
-  }
-  return context;
 }
 
 // Helper hook for UI state management
