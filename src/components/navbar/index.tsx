@@ -1,13 +1,29 @@
-import { NavLink } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useAuthContext } from '@/context';
 import { useProductContext } from '@/context';
 import { ShoppingCartIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { ShoppingBagIcon } from '@heroicons/react/20/solid';
 
-function Navbar() {
+function NavItem({ href, label, onClick }: { href: string; label: string; onClick?: () => void }) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
   const activeStyle = 'underline underline-offset-4';
-  const { account, signOut, handleSignOut } = useAuthContext();
+
+  return (
+    <li>
+      <Link href={href} className={isActive ? activeStyle : undefined} onClick={onClick}>
+        {label}
+      </Link>
+    </li>
+  );
+}
+
+function Navbar() {
+  const { user, isAuthenticated, logout } = useAuthContext();
   const { setSearchByCategory, openCheckoutSideMenu, cartProducts } = useProductContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -21,49 +37,19 @@ function Navbar() {
   };
 
   const renderView = () => {
-    if (signOut) {
-      return (
-        <li>
-          <NavLink
-            to="/sign-in"
-            className={({ isActive }) => (isActive ? activeStyle : undefined)}
-            onClick={() => closeMenuAndDoAction()}
-          >
-            Sign In
-          </NavLink>
-        </li>
-      );
+    if (!isAuthenticated) {
+      return <NavItem href="/sign-in" label="Sign In" onClick={() => closeMenuAndDoAction()} />;
     } else {
       return (
         <>
-          <li className="text-black/60">{account?.email || 'test@ecommerce.com'}</li>
-          <li>
-            <NavLink
-              to="/my-orders"
-              className={({ isActive }) => (isActive ? activeStyle : undefined)}
-              onClick={() => closeMenuAndDoAction()}
-            >
-              My Orders
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/my-account"
-              className={({ isActive }) => (isActive ? activeStyle : undefined)}
-              onClick={() => closeMenuAndDoAction()}
-            >
-              My Account
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/sign-in"
-              className={({ isActive }) => (isActive ? activeStyle : undefined)}
-              onClick={() => closeMenuAndDoAction(() => handleSignOut())}
-            >
-              Sign out
-            </NavLink>
-          </li>
+          <li className="text-black/60">{user?.email || 'demo@ecommerce.com'}</li>
+          <NavItem href="/my-orders" label="My Orders" onClick={() => closeMenuAndDoAction()} />
+          <NavItem href="/my-account" label="My Account" onClick={() => closeMenuAndDoAction()} />
+          <NavItem
+            href="/sign-in"
+            label="Sign out"
+            onClick={() => closeMenuAndDoAction(() => logout())}
+          />
         </>
       );
     }
@@ -76,7 +62,7 @@ function Navbar() {
           <ShoppingBagIcon className="w-8 h-8 text-black" />
         </li>
         <li className="font-semibold text-lg">
-          <NavLink to="/">Shop</NavLink>
+          <Link href="/">Shop</Link>
         </li>
       </ul>
       <div className="md:hidden">
@@ -108,51 +94,31 @@ function Navbar() {
           Menu
         </h1>
         <ul className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-3 mt-10 md:mt-0 md:pr-3 md:border-r border-gray-500">
-          <li>
-            <NavLink
-              to="/"
-              onClick={() => closeMenuAndDoAction(() => setSearchByCategory(undefined))}
-              className={({ isActive }) => (isActive ? activeStyle : undefined)}
-            >
-              All
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/clothes"
-              onClick={() => closeMenuAndDoAction(() => setSearchByCategory("men's clothing"))}
-              className={({ isActive }) => (isActive ? activeStyle : undefined)}
-            >
-              clothes
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/electronics"
-              onClick={() => closeMenuAndDoAction(() => setSearchByCategory('electronics'))}
-              className={({ isActive }) => (isActive ? activeStyle : undefined)}
-            >
-              electronics
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/jewelery"
-              onClick={() => closeMenuAndDoAction(() => setSearchByCategory('jewelery'))}
-              className={({ isActive }) => (isActive ? activeStyle : undefined)}
-            >
-              Jewelery
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/others"
-              onClick={() => closeMenuAndDoAction(() => setSearchByCategory('others'))}
-              className={({ isActive }) => (isActive ? activeStyle : undefined)}
-            >
-              others
-            </NavLink>
-          </li>
+          <NavItem
+            href="/"
+            label="All"
+            onClick={() => closeMenuAndDoAction(() => setSearchByCategory(undefined))}
+          />
+          <NavItem
+            href="/clothes"
+            label="clothes"
+            onClick={() => closeMenuAndDoAction(() => setSearchByCategory("men's clothing"))}
+          />
+          <NavItem
+            href="/electronics"
+            label="electronics"
+            onClick={() => closeMenuAndDoAction(() => setSearchByCategory('electronics'))}
+          />
+          <NavItem
+            href="/jewelery"
+            label="Jewelery"
+            onClick={() => closeMenuAndDoAction(() => setSearchByCategory('jewelery'))}
+          />
+          <NavItem
+            href="/others"
+            label="others"
+            onClick={() => closeMenuAndDoAction(() => setSearchByCategory('others'))}
+          />
         </ul>
         <ul className="flex flex-col md:flex-row items-start md:items-center z-10 gap-4 md:gap-3 mt-6 md:mt-0 pt-6 md:pt-0 border-t md:border-t-0 border-gray-300 md:border-trasnparent">
           {renderView()}

@@ -1,33 +1,108 @@
-import { createContext, ReactNode } from 'react';
-import { User } from '@/types';
-import { useAuth } from '@/hooks/useLocalStorage';
+import { createContext, ReactNode, useCallback, useEffect, useState } from 'react';
+import { User, LoginCredentials, RegisterCredentials, AuthResponse } from '@/types';
+import { AuthService } from '@/services/auth';
 
 interface AuthContextType {
-  account: User;
-  setAccount: (account: User) => void;
-  signOut: boolean;
-  setSignOut: (signOut: boolean) => void;
-  handleSignOut: () => void;
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  login: (credentials: LoginCredentials) => Promise<AuthResponse>;
+  register: (credentials: RegisterCredentials) => Promise<AuthResponse>;
+  logout: () => void;
+  clearError: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { account, setAccount, signOut, setSignOut } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSignOut = () => {
-    setSignOut(true);
-    setAccount({});
-  };
+  useEffect(() => {
+    AuthService.init();
+    const token = AuthService.getToken();
+    const userData = AuthService.getUser();
+
+    if (token && userData && AuthService.isAuthenticated()) {
+      setUser(userData);
+      setIsAuthenticated(true);
+    }
+    setIsLoading(false);
+  }, []);
+
+  const login = useCallback(async (credentials: LoginCredentials): Promise<AuthResponse> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await AuthService.login(credentials);
+
+      if (response.success && response.user) {
+        setUser(response.user);
+        setIsAuthenticated(true);
+      } else {
+        setError(response.error || 'Login failed');
+      }
+
+      return response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const register = useCallback(async (credentials: RegisterCredentials): Promise<AuthResponse> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await AuthService.register(credentials);
+
+      if (response.success && response.user) {
+        setUser(response.user);
+        setIsAuthenticated(true);
+      } else {
+        setError(response.error || 'Registration failed');
+      }
+
+      return response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    AuthService.logout();
+    setUser(null);
+    setIsAuthenticated(false);
+    setError(null);
+  }, []);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
-        account,
-        setAccount,
-        signOut,
-        setSignOut,
-        handleSignOut,
+        user,
+        isAuthenticated,
+        isLoading,
+        error,
+        login,
+        register,
+        logout,
+        clearError,
       }}
     >
       {children}

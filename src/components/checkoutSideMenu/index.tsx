@@ -1,10 +1,14 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { XMarkIcon } from '@heroicons/react/24/solid';
-import { useProductContext } from '@/context';
+import { useProductContext, useAuthContext } from '@/context';
 import OrderCard from '../orderCard';
 import { totalPrice } from '@/utils';
 
 function CheckoutSideMenu() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthContext();
   const {
     isCheckoutSideMenuOpen,
     closeCheckoutSideMenu,
@@ -18,6 +22,16 @@ function CheckoutSideMenu() {
     if (action) action();
     closeCheckoutSideMenu();
     setSearchByTitle(undefined);
+  };
+
+  const handleCheckoutClick = () => {
+    if (!isAuthenticated) {
+      handleClose(() => {
+        router.push('/sign-in');
+      });
+      return;
+    }
+    handleClose(() => handleCheckout());
   };
 
   return (
@@ -52,14 +66,12 @@ function CheckoutSideMenu() {
           <span className="font-light">Total:</span>
           <span className="font-medium text-2xl">${totalPrice(cartProducts)}</span>
         </p>
-        <Link to="/my-orders/last">
-          <button
-            className="bg-black py-3 text-white w-full rounded-lg"
-            onClick={() => handleClose(() => handleCheckout())}
-          >
-            Checkout
-          </button>
-        </Link>
+        <button
+          className="bg-black py-3 text-white w-full rounded-lg"
+          onClick={handleCheckoutClick}
+        >
+          {isAuthenticated ? 'Checkout' : 'Sign In to Checkout'}
+        </button>
       </div>
     </aside>
   );
