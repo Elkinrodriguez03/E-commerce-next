@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# Pre-push hook for additional validations
+
+echo "🔍 Running pre-push validations..."
+
+# Run TypeScript type check
+echo "📝 Running TypeScript type check..."
+npm run type-check
+if [ $? -ne 0 ]; then
+    echo "❌ TypeScript type check failed"
+    exit 1
+fi
+
+# Run linting
+echo "🔍 Running ESLint..."
+npm run lint
+if [ $? -ne 0 ]; then
+    echo "❌ Linting failed"
+    exit 1
+fi
+
+# Run build verification
+echo "🏗️  Running build verification..."
+npm run build
+if [ $? -ne 0 ]; then
+    echo "❌ Build failed"
+    exit 1
+fi
+
+echo "✅ All pre-push validations passed!"

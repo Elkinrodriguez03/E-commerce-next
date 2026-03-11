@@ -1,43 +1,27 @@
-import { NavLink } from "react-router-dom";
-import { useContext, useState } from "react";
-import { ShoppingCartContext } from "../../context";
-import {
-  ShoppingCartIcon,
-  Bars3Icon,
-  XMarkIcon
-} from "@heroicons/react/24/outline";
-import { ShoppingBagIcon } from "@heroicons/react/20/solid";
+import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { useAuthContext } from '@/context';
+import { useProductContext } from '@/context';
+import { ShoppingCartIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ShoppingBagIcon } from '@heroicons/react/20/solid';
 
 function Navbar() {
-  const activeStyle = "underline underline-offset-4";
-  const context = useContext(ShoppingCartContext);
+  const activeStyle = 'underline underline-offset-4';
+  const { account, signOut, handleSignOut } = useAuthContext();
+  const { setSearchByCategory, openCheckoutSideMenu, cartProducts } = useProductContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isUserSignOut = context.signOut;
-
-  const handleSignOut = () => {
-    // const stringifiedSignOut = JSON.stringify(true);
-    // localStorage.setItem("sign-out", stringifiedSignOut);
-
-    context.setSignOut(true);
-    context.setAccount({});
-  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const closeMenuAndDoAction = (action) => {
+  const closeMenuAndDoAction = (action?: () => void) => {
     if (action) action();
     setIsMenuOpen(false);
   };
-  
-  console.log("Navbar: Rendering...");
-    console.log("  context.signOut (from context):", context.signOut);
-    console.log("  isUserSignOut (derived in Navbar):", isUserSignOut);
 
   const renderView = () => {
-    console.log("Navbar: renderView called. isUserSignOut:", isUserSignOut);
-    if (isUserSignOut) {
+    if (signOut) {
       return (
         <li>
           <NavLink
@@ -52,7 +36,7 @@ function Navbar() {
     } else {
       return (
         <>
-          <li className="text-black/60">{context.account?.email || "test@ecommerce.com"}</li>
+          <li className="text-black/60">{account?.email || 'test@ecommerce.com'}</li>
           <li>
             <NavLink
               to="/my-orders"
@@ -105,17 +89,12 @@ function Navbar() {
         </button>
       </div>
 
-      {isMenuOpen && (
-        <div
-          className="fixed z-20 md:hidden" // Full screen overlay
-          onClick={toggleMenu} // Close menu when clicking outside
-        ></div>
-      )}
+      {isMenuOpen && <div className="fixed z-20 md:hidden" onClick={toggleMenu}></div>}
       <div
         className={`
           fixed top-0 right-0 h-full w-64 bg-gray-100 shadow-lg p-5
           transform transition-transform duration-300 ease-in-out
-          ${isMenuOpen ? "translate-x-0" : "translate-x-full"}
+          ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}
           md:relative md:flex md:h-auto md:w-auto md:p-0 md:shadow-none md:transform-none md:justify-end md:gap-3 md:flex-grow
         `}
       >
@@ -132,7 +111,7 @@ function Navbar() {
           <li>
             <NavLink
               to="/"
-              onClick={() => closeMenuAndDoAction(() => context.setSearchByCategory())}
+              onClick={() => closeMenuAndDoAction(() => setSearchByCategory(undefined))}
               className={({ isActive }) => (isActive ? activeStyle : undefined)}
             >
               All
@@ -141,12 +120,7 @@ function Navbar() {
           <li>
             <NavLink
               to="/clothes"
-              onClick={() => closeMenuAndDoAction(() =>
-                context.setSearchByCategory(
-                  `men's clothing`,
-                  `women's clothing`
-                ))
-              }
+              onClick={() => closeMenuAndDoAction(() => setSearchByCategory("men's clothing"))}
               className={({ isActive }) => (isActive ? activeStyle : undefined)}
             >
               clothes
@@ -155,7 +129,7 @@ function Navbar() {
           <li>
             <NavLink
               to="/electronics"
-              onClick={() => closeMenuAndDoAction(() => context.setSearchByCategory("electronics"))}
+              onClick={() => closeMenuAndDoAction(() => setSearchByCategory('electronics'))}
               className={({ isActive }) => (isActive ? activeStyle : undefined)}
             >
               electronics
@@ -164,7 +138,7 @@ function Navbar() {
           <li>
             <NavLink
               to="/jewelery"
-              onClick={() => closeMenuAndDoAction(() => context.setSearchByCategory("jewelery"))}
+              onClick={() => closeMenuAndDoAction(() => setSearchByCategory('jewelery'))}
               className={({ isActive }) => (isActive ? activeStyle : undefined)}
             >
               Jewelery
@@ -173,7 +147,7 @@ function Navbar() {
           <li>
             <NavLink
               to="/others"
-              onClick={() => closeMenuAndDoAction(() => context.setSearchByCategory("others"))}
+              onClick={() => closeMenuAndDoAction(() => setSearchByCategory('others'))}
               className={({ isActive }) => (isActive ? activeStyle : undefined)}
             >
               others
@@ -183,8 +157,11 @@ function Navbar() {
         <ul className="flex flex-col md:flex-row items-start md:items-center z-10 gap-4 md:gap-3 mt-6 md:mt-0 pt-6 md:pt-0 border-t md:border-t-0 border-gray-300 md:border-trasnparent">
           {renderView()}
           <li className="flex items-center cursor-pointer">
-            <ShoppingCartIcon className="w-6 h-6 text-black" onClick={() => closeMenuAndDoAction(() => context.openCheckoutSideMenu())} />
-            <div>{context.cartProducts.length}</div>
+            <ShoppingCartIcon
+              className="w-6 h-6 text-black"
+              onClick={() => closeMenuAndDoAction(() => openCheckoutSideMenu())}
+            />
+            <div>{cartProducts.length}</div>
           </li>
         </ul>
       </div>
