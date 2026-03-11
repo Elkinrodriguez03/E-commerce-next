@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '@/context';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 function SignIn() {
+  useDocumentTitle('Sign In');
   const { setSignOut, setAccount, signOut, account } = useAuthContext();
   const navigate = useNavigate();
 

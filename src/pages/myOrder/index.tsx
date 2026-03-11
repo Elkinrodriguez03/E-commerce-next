@@ -1,9 +1,11 @@
 import OrderCard from '@/components/orderCard';
 import { useProductContext } from '@/context';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { ChevronLeftIcon } from '@heroicons/react/24/solid';
 import { Link } from 'react-router-dom';
 
 function MyOrder() {
+  useDocumentTitle('My Order');
   const { order } = useProductContext();
   const currentPath = window.location.pathname;
   let index = currentPath.substring(currentPath.lastIndexOf('/') + 1);

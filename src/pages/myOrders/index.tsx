@@ -1,9 +1,11 @@
 import OrdersCard from '@/components/ordersCard';
 import { useProductContext } from '@/context';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { Order } from '@/types';
 import { Link } from 'react-router-dom';
 
 function MyOrders() {
+  useDocumentTitle('My Orders');
   const { order } = useProductContext();
 
   return (

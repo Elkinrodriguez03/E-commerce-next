@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useProductContext } from '@/context';
 import { Product } from '@/types';
 import { CheckIcon, PlusIcon } from '@heroicons/react/24/outline';
@@ -6,7 +7,7 @@ interface CardProps {
   data: Product;
 }
 
-function Card({ data }: CardProps) {
+const Card = memo(function Card({ data }: CardProps) {
   const { openProductDetail, setProductToShow, cartProducts, addToCart, removeFromCart } =
     useProductContext();
 
@@ -23,6 +24,7 @@ function Card({ data }: CardProps) {
         <button
           className="absolute top-0 right-0 flex justify-center items-center bg-green-500 w-6 h-6 rounded-full m-3 p-1"
           onClick={() => removeFromCart(id)}
+          aria-label="Remove from cart"
         >
           <CheckIcon className="w-6 h-6 text-white" />
         </button>
@@ -32,6 +34,7 @@ function Card({ data }: CardProps) {
         <button
           className="absolute top-0 right-0 flex justify-center items-center bg-gray-100 w-6 h-6 rounded-full m-3 p-1"
           onClick={event => addToCart(event, data)}
+          aria-label="Add to cart"
         >
           <PlusIcon className="w-6 h-6 text-black" />
         </button>
@@ -50,6 +53,7 @@ function Card({ data }: CardProps) {
           src={data.image}
           alt={data.title}
           onClick={() => showProduct(data)}
+          loading="lazy"
         />
         {renderIcon(data.id)}
       </figure>
@@ -59,6 +63,6 @@ function Card({ data }: CardProps) {
       </p>
     </div>
   );
-}
+});
 
 export default Card;
