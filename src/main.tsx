@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './pages/app';
+import App from './views/app';
 import Layout from './components/layout';
 import ErrorBoundary from './components/errorBoundary';
 
