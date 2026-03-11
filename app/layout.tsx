@@ -4,6 +4,7 @@ import Navbar from '@/components/navbar';
 import CheckoutSideMenu from '@/components/checkoutSideMenu';
 import './globals.css';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const metadata: Metadata = {
   title: 'E-Commerce Shop',
   description: 'E-commerce application built with Next.js',
