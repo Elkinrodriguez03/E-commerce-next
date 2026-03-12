@@ -1,3 +1,5 @@
+'use client';
+
 import { memo } from 'react';
 import { useProductContext } from '@/context';
 import { Product } from '@/types';

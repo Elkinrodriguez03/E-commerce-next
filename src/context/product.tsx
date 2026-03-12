@@ -46,7 +46,7 @@ const defaultProduct: Product = {
   price: 0,
   description: '',
   category: '',
-  image: '',
+  image: '/placeholder.svg',
 };
 
 export function ProductProvider({ children }: { children: ReactNode }) {
