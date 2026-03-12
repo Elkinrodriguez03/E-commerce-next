@@ -1,12 +1,11 @@
 import { Product } from '@/types';
+import { AuthService } from '@/services/auth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 class ApiClient {
-  private token: string | null = null;
-
-  setToken(token: string | null) {
-    this.token = token;
+  private getToken(): string | null {
+    return AuthService.getToken();
   }
 
   private async fetch(endpoint: string, options: RequestInit = {}) {
@@ -20,8 +19,9 @@ class ApiClient {
       Object.assign(headers, options.headers);
     }
 
-    if (this.token) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${this.token}`;
+    const token = this.getToken();
+    if (token) {
+      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
     }
 
     const response = await fetch(url, {
