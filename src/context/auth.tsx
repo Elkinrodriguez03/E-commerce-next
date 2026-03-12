@@ -22,15 +22,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    AuthService.init();
-    const token = AuthService.getToken();
-    const userData = AuthService.getUser();
+    const initAuth = async () => {
+      AuthService.init();
+      const token = AuthService.getToken();
 
-    if (token && userData && AuthService.isAuthenticated()) {
-      setUser(userData);
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false);
+      if (token) {
+        // Validate token against the server
+        const validatedUser = await AuthService.validateSession();
+        if (validatedUser) {
+          setUser(validatedUser);
+          setIsAuthenticated(true);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const login = useCallback(async (credentials: LoginCredentials): Promise<AuthResponse> => {
