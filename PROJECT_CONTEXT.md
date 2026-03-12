@@ -56,7 +56,6 @@ E-commerce-next/
 │   ├── page.tsx                  # Home page (product grid + search)
 │   ├── not-found.tsx             # Custom 404 page
 │   ├── sign-in/page.tsx          # Login form with Zod validation
-│   ├── sign-up/page.tsx          # Registration form with Zod validation
 │   ├── my-account/page.tsx       # Display user name & email
 │   ├── my-orders/page.tsx        # List of all user orders
 │   ├── my-orders/last/page.tsx   # Last order detail
@@ -230,7 +229,6 @@ All API routes are in `app/api/` and use Next.js Route Handlers. Auth-protected 
 | `/jewelery`       | `app/jewelery/page.tsx`       | Jewelery category (reuses Home view)    |
 | `/others`         | `app/others/page.tsx`         | Others category (reuses Home view)      |
 | `/sign-in`        | `app/sign-in/page.tsx`        | Login form with Zod validation          |
-| `/sign-up`        | `app/sign-up/page.tsx`        | Registration form with Zod validation   |
 | `/my-account`     | `app/my-account/page.tsx`     | User profile (name, email)              |
 | `/my-orders`      | `app/my-orders/page.tsx`      | List of all orders                      |
 | `/my-orders/last` | `app/my-orders/last/page.tsx` | Last order detail                       |
@@ -389,7 +387,9 @@ Manages products, cart, orders, and UI state.
 
 - **Platform:** Vercel
 - **Framework:** Next.js (auto-detected)
+- **Database:** Vercel Postgres (Prisma-managed, via `DATABASE_URL`)
 - **Build command:** `npm run build` (runs `prisma generate && next build`)
+- **CI/CD:** GitHub Actions (`.github/workflows/ci-cd.yml`) — lint, build, deploy via Vercel CLI
 - **Security headers:** `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`
 
 ---
