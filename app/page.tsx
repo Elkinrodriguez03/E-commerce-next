@@ -27,7 +27,7 @@ const Home = memo(function Home() {
 
   return (
     <div className="flex flex-col items-center m-5">
-      <div className="flex w-80 items-center relative justify-center mb-3">
+      <div className="flex w-80 items-center relative justify-center mb-3 mt-3">
         <h1 className="font-medium text-xl">Home</h1>
       </div>
       <input

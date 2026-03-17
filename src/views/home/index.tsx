@@ -5,9 +5,19 @@ import ProductDetail from '@/components/productDetail';
 import { useProductContext } from '@/context';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
+const categoryTitles: Record<string, string> = {
+  "men's clothing": 'Clothes',
+  electronics: 'Electronics',
+  jewelery: 'Jewelery',
+  others: 'Others',
+};
+
 const Home = memo(function Home() {
-  useDocumentTitle('Home');
-  const { filteredItems, setSearchByTitle, loading, error } = useProductContext();
+  const { filteredItems, setSearchByTitle, searchByCategory, loading, error } = useProductContext();
+  const pageTitle = searchByCategory
+    ? categoryTitles[searchByCategory] || searchByCategory
+    : 'Home';
+  useDocumentTitle(pageTitle);
 
   const renderView = useMemo(() => {
     if (loading) {
@@ -27,8 +37,8 @@ const Home = memo(function Home() {
 
   return (
     <div className="flex flex-col items-center m-5">
-      <div className="flex w-80 items-center relative justify-center mb-3">
-        <h1 className="font-medium text-xl">Home</h1>
+      <div className="flex w-80 items-center relative justify-center mb-3 mt-3">
+        <h1 className="font-medium text-xl">{pageTitle}</h1>
       </div>
       <input
         className="rounded-lg border border-gray-300 w-80 p-3 mb-3 focus:outline-none focus:ring-2 focus:ring-black"
