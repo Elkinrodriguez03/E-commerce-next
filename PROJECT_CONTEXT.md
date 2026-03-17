@@ -286,6 +286,9 @@ Manages products, cart, orders, and UI state.
 | **LoadingSpinner**   | `src/components/loadingSpinner/`   | Animated CSS spinner (sm/md/lg)                                                   |
 | **ErrorBoundary**    | `src/components/errorBoundary/`    | Class-based error boundary with retry                                             |
 | **ErrorFallback**    | `src/components/errorFallback/`    | Styled error display with retry button                                            |
+| **FormField**        | `src/components/formField/`        | Reusable input with label, error/success states, password toggle (eye icon)       |
+| **PasswordStrength** | `src/components/passwordStrength/` | Password strength bar + requirements checklist (real-time)                        |
+| **SuccessModal**     | `src/components/successModal/`     | Animated success modal with progress bar and auto-redirect                        |
 | **ProtectedRoute**   | `src/components/protectedRoute/`   | Legacy route guard (react-router-dom)                                             |
 | **Layout**           | `src/components/layout/`           | Legacy centered content wrapper                                                   |
 
@@ -293,16 +296,17 @@ Manages products, cart, orders, and UI state.
 
 ## 9. Custom Hooks
 
-| Hook                | File                             | Purpose                                        |
-| ------------------- | -------------------------------- | ---------------------------------------------- |
-| `useAuthContext`    | `src/hooks/useAuthContext.ts`    | Typed access to AuthContext                    |
-| `useProductContext` | `src/hooks/useProductContext.ts` | Typed access to ProductContext                 |
-| `useCart`           | `src/hooks/useCart.ts`           | Cart state + add/remove/checkout/clear         |
-| `useFilters`        | `src/hooks/useFilters.ts`        | Product filtering (title, category, both)      |
-| `useProducts`       | `src/hooks/useProducts.ts`       | Fetch products from FakeStore API              |
-| `useUI`             | `src/hooks/useUI.ts`             | UI toggles (standalone, used in legacy code)   |
-| `useDocumentTitle`  | `src/hooks/useDocumentTitle.ts`  | Dynamic `<title>` with suffix                  |
-| `useLocalStorage`   | `src/hooks/useLocalStorage.ts`   | Generic localStorage hook + `useAuth` (legacy) |
+| Hook                | File                             | Purpose                                                             |
+| ------------------- | -------------------------------- | ------------------------------------------------------------------- |
+| `useAuthContext`    | `src/hooks/useAuthContext.ts`    | Typed access to AuthContext                                         |
+| `useProductContext` | `src/hooks/useProductContext.ts` | Typed access to ProductContext                                      |
+| `useCart`           | `src/hooks/useCart.ts`           | Cart state + add/remove/checkout/clear                              |
+| `useFilters`        | `src/hooks/useFilters.ts`        | Product filtering (title, category, both)                           |
+| `useProducts`       | `src/hooks/useProducts.ts`       | Fetch products from FakeStore API                                   |
+| `useUI`             | `src/hooks/useUI.ts`             | UI toggles (standalone, used in legacy code)                        |
+| `useDocumentTitle`  | `src/hooks/useDocumentTitle.ts`  | Dynamic `<title>` with suffix                                       |
+| `useFormValidation` | `src/hooks/useFormValidation.ts` | Real-time Zod-based form validation (blur + onChange after touched) |
+| `useLocalStorage`   | `src/hooks/useLocalStorage.ts`   | Generic localStorage hook + `useAuth` (legacy)                      |
 
 ---
 

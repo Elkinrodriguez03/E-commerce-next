@@ -1,155 +1,116 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/context';
-import { registerSchema, type RegisterFormData } from '@/validation/auth';
+import { registerSchema } from '@/validation/auth';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import FormField from '@/components/formField';
+import PasswordStrength from '@/components/passwordStrength';
 
 function SignUp() {
   const { register, isLoading, error, clearError, isAuthenticated } = useAuthContext();
   const router = useRouter();
+  const redirecting = useRef(false);
 
-  const [formData, setFormData] = useState<RegisterFormData>({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+  const form = useFormValidation({
+    schema: registerSchema,
+    initialValues: { name: '', email: '', password: '', confirmPassword: '' },
   });
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !redirecting.current) {
     router.push('/');
     return null;
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (validationErrors[name]) {
-      setValidationErrors(prev => ({ ...prev, [name]: '' }));
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    form.handleChange(e);
     if (error) clearError();
   };
 
   const handleRegister = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    const result = registerSchema.safeParse(formData);
-    if (!result.success) {
-      const errors: Record<string, string> = {};
-      result.error.issues.forEach(issue => {
-        const field = issue.path[0];
-        if (typeof field === 'string') {
-          errors[field] = issue.message;
-        }
-      });
-      setValidationErrors(errors);
-      return;
-    }
+    if (!form.validateAll()) return;
 
     const response = await register({
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
+      name: form.values.name,
+      email: form.values.email,
+      password: form.values.password,
     });
 
     if (response.success) {
-      router.push('/');
+      redirecting.current = true;
+      router.push('/?welcome=register');
     }
   };
 
+  const nameState = form.getFieldState('name');
+  const emailState = form.getFieldState('email');
+  const passwordState = form.getFieldState('password');
+  const confirmPasswordState = form.getFieldState('confirmPassword');
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Create Account</h1>
-      <form onSubmit={handleRegister} className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+      <form
+        onSubmit={handleRegister}
+        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+        noValidate
+      >
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>
         )}
 
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-            Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-black ${
-              validationErrors.name ? 'border-red-500' : ''
-            }`}
-            placeholder="Enter your name"
-            value={formData.name}
-            onChange={handleInputChange}
-            autoComplete="name"
-          />
-          {validationErrors.name && (
-            <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>
-          )}
-        </div>
+        <FormField
+          label="Name"
+          type="text"
+          placeholder="Enter your name"
+          autoComplete="name"
+          {...form.getFieldProps('name')}
+          onChange={handleChange}
+          error={nameState.error}
+          hasError={nameState.hasError}
+          isValid={nameState.isValid}
+        />
 
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-black ${
-              validationErrors.email ? 'border-red-500' : ''
-            }`}
-            placeholder="Enter your email"
-            value={formData.email}
-            onChange={handleInputChange}
-            autoComplete="email"
-          />
-          {validationErrors.email && (
-            <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>
-          )}
-        </div>
+        <FormField
+          label="Email"
+          type="email"
+          placeholder="Enter your email"
+          autoComplete="email"
+          {...form.getFieldProps('email')}
+          onChange={handleChange}
+          error={emailState.error}
+          hasError={emailState.hasError}
+          isValid={emailState.isValid}
+        />
 
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-black ${
-              validationErrors.password ? 'border-red-500' : ''
-            }`}
-            placeholder="Create a password"
-            value={formData.password}
-            onChange={handleInputChange}
-            autoComplete="new-password"
-          />
-          {validationErrors.password && (
-            <p className="text-red-500 text-xs mt-1">{validationErrors.password}</p>
-          )}
-        </div>
+        <FormField
+          label="Password"
+          type="password"
+          placeholder="Create a password"
+          autoComplete="new-password"
+          {...form.getFieldProps('password')}
+          onChange={handleChange}
+          error={passwordState.error}
+          hasError={passwordState.hasError}
+          isValid={passwordState.isValid}
+        >
+          <PasswordStrength password={form.values.password} />
+        </FormField>
 
-        <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirmPassword">
-            Confirm Password
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-black ${
-              validationErrors.confirmPassword ? 'border-red-500' : ''
-            }`}
-            placeholder="Confirm your password"
-            value={formData.confirmPassword}
-            onChange={handleInputChange}
-            autoComplete="new-password"
-          />
-          {validationErrors.confirmPassword && (
-            <p className="text-red-500 text-xs mt-1">{validationErrors.confirmPassword}</p>
-          )}
-        </div>
+        <FormField
+          label="Confirm Password"
+          type="password"
+          placeholder="Confirm your password"
+          autoComplete="new-password"
+          {...form.getFieldProps('confirmPassword')}
+          onChange={handleChange}
+          error={confirmPasswordState.error}
+          hasError={confirmPasswordState.hasError}
+          isValid={confirmPasswordState.isValid}
+        />
 
         <button
           type="submit"
