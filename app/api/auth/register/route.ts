@@ -42,7 +42,9 @@ export async function POST(request: Request) {
       user,
       token,
     });
-  } catch (_error) {
-    return NextResponse.json({ error: 'Registration failed' }, { status: 500 });
+  } catch (error) {
+    console.error('Register error:', error);
+    const message = error instanceof Error ? error.message : 'Registration failed';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
