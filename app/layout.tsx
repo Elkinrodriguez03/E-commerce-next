@@ -1,7 +1,9 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { Providers } from './providers';
 import Navbar from '@/components/navbar';
 import CheckoutSideMenu from '@/components/checkoutSideMenu';
+import AuthSuccessToast from '@/components/authSuccessToast';
 import './globals.css';
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -18,6 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
           <main className="mt-20">{children}</main>
           <CheckoutSideMenu />
+          <Suspense fallback={null}>
+            <AuthSuccessToast />
+          </Suspense>
         </Providers>
       </body>
     </html>
