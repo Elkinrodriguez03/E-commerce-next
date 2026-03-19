@@ -6,7 +6,11 @@ import { hashPassword, generateToken } from '@/lib/auth';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password, name } = body;
+    const { email, password, name, role } = body;
+
+    // Validate role
+    const validRoles = ['CUSTOMER', 'SELLER'];
+    const userRole = validRoles.includes(role) ? role : 'CUSTOMER';
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -26,11 +30,13 @@ export async function POST(request: Request) {
         email,
         password: passwordHash,
         name,
+        role: userRole,
       },
       select: {
         id: true,
         email: true,
         name: true,
+        role: true,
       },
     });
 
@@ -42,9 +48,7 @@ export async function POST(request: Request) {
       user,
       token,
     });
-  } catch (error) {
-    console.error('Register error:', error);
-    const message = error instanceof Error ? error.message : 'Registration failed';
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (_error) {
+    return NextResponse.json({ error: 'Registration failed' }, { status: 500 });
   }
 }

@@ -16,7 +16,9 @@ export function generateToken(userId: string): string {
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '24h' });
 }
 
-export function verifyToken(request: Request): Promise<{ id: string; email: string } | null> {
+export function verifyToken(
+  request: Request
+): Promise<{ id: string; email: string; role: string } | null> {
   return new Promise(resolve => {
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
@@ -36,7 +38,7 @@ export function verifyToken(request: Request): Promise<{ id: string; email: stri
 
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true, email: true },
+        select: { id: true, email: true, role: true },
       });
 
       resolve(user);
@@ -49,7 +51,7 @@ export async function getUserFromToken(token: string) {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     return prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, name: true },
+      select: { id: true, email: true, name: true, role: true },
     });
   } catch {
     return null;

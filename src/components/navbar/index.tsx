@@ -36,6 +36,8 @@ function Navbar() {
     setIsMenuOpen(false);
   };
 
+  const isSeller = isAuthenticated && user?.role === 'SELLER';
+
   const renderView = () => {
     if (!isAuthenticated) {
       return <NavItem href="/sign-in" label="Sign In" onClick={() => closeMenuAndDoAction()} />;
@@ -43,8 +45,29 @@ function Navbar() {
       return (
         <>
           <li className="text-black/60">{user?.email || 'demo@ecommerce.com'}</li>
-          <NavItem href="/my-orders" label="My Orders" onClick={() => closeMenuAndDoAction()} />
-          <NavItem href="/my-account" label="My Account" onClick={() => closeMenuAndDoAction()} />
+          {isSeller ? (
+            <>
+              <NavItem
+                href="/seller/dashboard"
+                label="Dashboard"
+                onClick={() => closeMenuAndDoAction()}
+              />
+              <NavItem
+                href="/seller/products/new"
+                label="Add Product"
+                onClick={() => closeMenuAndDoAction()}
+              />
+            </>
+          ) : (
+            <>
+              <NavItem href="/my-orders" label="My Orders" onClick={() => closeMenuAndDoAction()} />
+              <NavItem
+                href="/my-account"
+                label="My Account"
+                onClick={() => closeMenuAndDoAction()}
+              />
+            </>
+          )}
           <NavItem
             href="/sign-in"
             label="Sign out"

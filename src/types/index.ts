@@ -1,5 +1,7 @@
+export type Role = 'CUSTOMER' | 'SELLER';
+
 export interface Product {
-  id: number;
+  id: number | string;
   title: string;
   price: number;
   description: string;
@@ -9,6 +11,9 @@ export interface Product {
     rate: number;
     count: number;
   };
+  sellerId?: string;
+  stock?: number;
+  status?: string;
 }
 
 export interface CartItem extends Product {
@@ -27,6 +32,7 @@ export interface User {
   email?: string;
   name?: string;
   password?: string;
+  role?: Role;
 }
 
 // Authentication Types
@@ -39,6 +45,7 @@ export interface RegisterCredentials {
   email: string;
   password: string;
   name: string;
+  role?: Role;
 }
 
 export interface AuthResponse {
@@ -105,4 +112,24 @@ export interface LayoutProps {
 
 export interface CardProps {
   data: Product;
+}
+
+export interface SellerProduct {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  stock: number;
+  status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SellerDashboardStats {
+  totalProducts: number;
+  activeProducts: number;
+  draftProducts: number;
+  totalStock: number;
 }

@@ -16,6 +16,7 @@ export async function GET(request: Request) {
         id: true,
         email: true,
         name: true,
+        role: true,
         createdAt: true,
         updatedAt: true,
         _count: {
