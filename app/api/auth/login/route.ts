@@ -33,12 +33,11 @@ export async function POST(request: Request) {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role,
       },
       token,
     });
-  } catch (error) {
-    console.error('Login error:', error);
-    const message = error instanceof Error ? error.message : 'Login failed';
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (_error) {
+    return NextResponse.json({ error: 'Login failed' }, { status: 500 });
   }
 }

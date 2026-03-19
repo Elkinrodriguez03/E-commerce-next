@@ -13,7 +13,7 @@ export const useCart = () => {
     setCounter(counter + 1);
   };
 
-  const removeProductFromCart = (id: number) => {
+  const removeProductFromCart = (id: number | string) => {
     const updatedCart = cartProducts.filter(product => product.id !== id);
     setCartProducts(updatedCart);
     setCounter(Math.max(0, counter - 1));

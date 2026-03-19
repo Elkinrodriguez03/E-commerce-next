@@ -20,7 +20,7 @@ interface ProductContextType {
   // Cart operations
   cartProducts: CartItem[];
   addToCart: (event: React.MouseEvent, product: Product) => void;
-  removeFromCart: (id: number) => void;
+  removeFromCart: (id: number | string) => void;
   clearCart: () => void;
 
   // Orders
@@ -85,7 +85,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   );
 
   const removeFromCart = useCallback(
-    (id: number) => {
+    (id: number | string) => {
       removeProductFromCart(id);
     },
     [removeProductFromCart]

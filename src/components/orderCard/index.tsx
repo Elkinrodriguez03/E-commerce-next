@@ -1,11 +1,11 @@
 import { XMarkIcon } from '@heroicons/react/24/solid';
 
 interface OrderCardProps {
-  id: number;
+  id: number | string;
   title: string;
   imageUrl: string;
   price: number;
-  handleDelete?: (id: number) => void;
+  handleDelete?: (id: number | string) => void;
 }
 
 function OrderCard({ id, title, imageUrl, price, handleDelete }: OrderCardProps) {

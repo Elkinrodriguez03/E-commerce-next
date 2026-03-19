@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/context';
@@ -8,11 +8,13 @@ import { registerSchema } from '@/validation/auth';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import FormField from '@/components/formField';
 import PasswordStrength from '@/components/passwordStrength';
+import type { Role } from '@/types';
 
 function SignUp() {
   const { register, isLoading, error, clearError, isAuthenticated } = useAuthContext();
   const router = useRouter();
   const redirecting = useRef(false);
+  const [role, setRole] = useState<Role>('CUSTOMER');
 
   const form = useFormValidation({
     schema: registerSchema,
@@ -37,11 +39,14 @@ function SignUp() {
       name: form.values.name,
       email: form.values.email,
       password: form.values.password,
+      role,
     });
 
     if (response.success) {
       redirecting.current = true;
-      router.push('/?welcome=register');
+      const redirect =
+        role === 'SELLER' ? '/seller/dashboard?welcome=register' : '/?welcome=register';
+      router.push(redirect);
     }
   };
 
@@ -61,6 +66,35 @@ function SignUp() {
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>
         )}
+
+        {/* Role selector */}
+        <div className="mb-5">
+          <label className="block text-gray-700 text-sm font-bold mb-2">I want to</label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+                role === 'CUSTOMER'
+                  ? 'border-black bg-black text-white'
+                  : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+              }`}
+              onClick={() => setRole('CUSTOMER')}
+            >
+              Buy products
+            </button>
+            <button
+              type="button"
+              className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+                role === 'SELLER'
+                  ? 'border-black bg-black text-white'
+                  : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+              }`}
+              onClick={() => setRole('SELLER')}
+            >
+              Sell products
+            </button>
+          </div>
+        </div>
 
         <FormField
           label="Name"

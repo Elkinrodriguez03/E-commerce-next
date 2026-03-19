@@ -46,7 +46,7 @@ export class AuthService {
         return { success: false, error: data.error || 'Login failed' };
       }
 
-      const userData: User = { email: data.user.email, name: data.user.name };
+      const userData: User = { email: data.user.email, name: data.user.name, role: data.user.role };
       this.setSession(data.token, userData);
 
       return { success: true, user: userData, token: data.token };
@@ -69,7 +69,7 @@ export class AuthService {
         return { success: false, error: data.error || 'Registration failed' };
       }
 
-      const userData: User = { email: data.user.email, name: data.user.name };
+      const userData: User = { email: data.user.email, name: data.user.name, role: data.user.role };
       this.setSession(data.token, userData);
 
       return { success: true, user: userData, token: data.token };
@@ -93,7 +93,7 @@ export class AuthService {
       }
 
       const profile = await res.json();
-      const userData: User = { email: profile.email, name: profile.name };
+      const userData: User = { email: profile.email, name: profile.name, role: profile.role };
       // Refresh cached user data
       localStorage.setItem(USER_KEY, JSON.stringify(userData));
       return userData;

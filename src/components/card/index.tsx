@@ -18,7 +18,7 @@ const Card = memo(function Card({ data }: CardProps) {
     setProductToShow(productDetail);
   };
 
-  const renderIcon = (id: number) => {
+  const renderIcon = (id: number | string) => {
     const isInCart = cartProducts.filter(product => product.id === id).length > 0;
 
     if (isInCart) {

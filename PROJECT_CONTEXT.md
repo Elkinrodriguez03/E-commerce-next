@@ -1,6 +1,6 @@
 # PROJECT CONTEXT — E-commerce Next.js Application
 
-> **Last updated:** 2026-03-12
+> **Last updated:** 2026-03-19
 > **Purpose:** Single source of truth for AI assistants and developers to understand this project quickly.
 > **Maintainability:** Update this file whenever you add/remove pages, API routes, components, models, or make architectural changes.
 
@@ -8,7 +8,7 @@
 
 ## 1. Project Overview
 
-A full-stack **e-commerce web application** built with **Next.js 16 (App Router)** and **React 18**. Products are fetched from the [FakeStore API](https://fakestoreapi.com/products) and displayed in a responsive grid. Users can browse by category, search by title, add items to a cart, and checkout. Authentication is handled via JWT tokens with bcrypt password hashing. The backend uses **Prisma ORM** with **PostgreSQL** for users, carts, and orders.
+A full-stack **e-commerce web application** built with **Next.js 16 (App Router)** and **React 18**. Products are fetched from both the [FakeStore API](https://fakestoreapi.com/products) and seller-uploaded products in the database, displayed in a responsive grid. Users can browse by category, search by title, add items to a cart, and checkout. The app supports **two roles**: **Customers** (browse & buy) and **Sellers** (manage & sell products via a dashboard). Authentication is handled via JWT tokens with bcrypt password hashing. The backend uses **Prisma ORM** with **PostgreSQL** for users, products, carts, and orders.
 
 ### Key Characteristics
 
@@ -56,6 +56,12 @@ E-commerce-next/
 │   ├── page.tsx                  # Home page (product grid + search)
 │   ├── not-found.tsx             # Custom 404 page
 │   ├── sign-in/page.tsx          # Login form with Zod validation
+│   ├── sign-up/page.tsx          # Registration form with role selector (Customer/Seller)
+│   ├── seller/
+│   │   ├── dashboard/page.tsx    # Seller dashboard (stats, product table)
+│   │   └── products/
+│   │       ├── new/page.tsx      # Create new product form
+│   │       └── [id]/edit/page.tsx # Edit/delete existing product
 │   ├── my-account/page.tsx       # Display user name & email
 │   ├── my-orders/page.tsx        # List of all user orders
 │   ├── my-orders/last/page.tsx   # Last order detail
@@ -72,15 +78,20 @@ E-commerce-next/
 │       ├── orders/route.ts       # GET   - Get user's orders
 │       ├── users/route.ts        # GET   - List all users | POST - Create user
 │       ├── users/[id]/route.ts   # GET/PUT/DELETE - CRUD single user
-│       └── users/profile/route.ts# GET/PUT - Current user profile
+│       ├── users/profile/route.ts# GET/PUT - Current user profile
+│       ├── products/route.ts     # GET - Public: list all active seller products
+│       └── seller/products/      # Seller-only routes (withRole middleware)
+│           ├── route.ts          # GET - List own products | POST - Create product
+│           └── [id]/route.ts     # GET/PUT/DELETE - CRUD single product
 │
 ├── lib/                          # Server-side utilities
 │   ├── prisma.ts                 # Singleton PrismaClient (hot-reload safe)
-│   └── auth.ts                   # hashPassword, verifyPassword, generateToken, verifyToken, getUserFromToken
+│   ├── auth.ts                   # hashPassword, verifyPassword, generateToken, verifyToken, getUserFromToken
+│   └── middleware.ts             # withAuth (JWT guard), withRole (role-based access control)
 │
 ├── prisma/
-│   ├── schema.prisma             # Data models: User, Cart, CartItem, Order
-│   ├── seed.ts                   # Seeds demo user (demo@ecommerce.com / password123)
+│   ├── schema.prisma             # Data models: User, Product, Cart, CartItem, Order + Role/ProductStatus enums
+│   ├── seed.ts                   # Seeds demo customer, demo seller, and sample products
 │   ├── migrations/               # Database migrations
 │   └── dev.db                    # Local SQLite dev database (schema says PostgreSQL)
 │
@@ -123,6 +134,7 @@ E-commerce-next/
 │   ├── constants/index.ts        # API_ENDPOINTS, CATEGORIES, ROUTES, LOCAL_STORAGE_KEYS
 │   ├── utils/index.ts            # totalPrice, initializeLocalStorage, formatDateTime, filter functions
 │   ├── validation/auth.ts        # Zod schemas: loginSchema, registerSchema
+│   ├── validation/product.ts     # Zod schemas: createProductSchema, updateProductSchema
 │   │
 │   ├── views/                    # Legacy page-level components (from Vite/react-router era)
 │   │   ├── home/                 # Home view (used by category pages)
@@ -157,14 +169,34 @@ E-commerce-next/
 ## 4. Data Models (Prisma Schema)
 
 ```
+enum Role: CUSTOMER | SELLER
+enum ProductStatus: ACTIVE | DRAFT | ARCHIVED
+
 User (users)
 ├── id: String (UUID, PK)
 ├── email: String (unique)
 ├── password: String (bcrypt hash)
 ├── name: String
+├── role: Role (default CUSTOMER)
 ├── createdAt / updatedAt
 ├── → carts: Cart[]
-└── → orders: Order[]
+├── → orders: Order[]
+└── → products: Product[] (seller's listed products)
+
+Product (products)
+├── id: String (UUID, PK)
+├── sellerId → User
+├── title: String
+├── description: String
+├── price: Float
+├── image: String
+├── category: String
+├── stock: Int (default 0)
+├── status: ProductStatus (default DRAFT)
+├── createdAt / updatedAt
+├── @@index([sellerId])
+├── @@index([category])
+└── @@index([status])
 
 Cart (carts)
 ├── id: String (UUID, PK)
@@ -177,7 +209,7 @@ Cart (carts)
 CartItem (cart_items)
 ├── id: String (UUID, PK)
 ├── cartId → Cart
-├── productId: Int (FakeStore API product ID)
+├── productId: String (FakeStore ID as string or seller product UUID)
 ├── quantity: Int (default 1)
 ├── price: Float (snapshot at time of add)
 ├── title: String (snapshot)
@@ -201,39 +233,49 @@ Order (orders)
 
 All API routes are in `app/api/` and use Next.js Route Handlers. Auth-protected routes use `verifyToken()` from `lib/auth.ts` (Bearer JWT).
 
-| Method | Endpoint             | Auth | Description                         |
-| ------ | -------------------- | ---- | ----------------------------------- |
-| POST   | `/api/auth/login`    | No   | Login, returns JWT + user           |
-| POST   | `/api/auth/register` | No   | Register, returns JWT + user        |
-| GET    | `/api/cart`          | Yes  | Get user's active cart with items   |
-| POST   | `/api/cart`          | Yes  | Add item to cart (or increment qty) |
-| POST   | `/api/checkout`      | Yes  | Convert active cart → order (txn)   |
-| GET    | `/api/orders`        | Yes  | Get user's orders (desc by date)    |
-| GET    | `/api/users`         | Yes  | List all users (admin-like)         |
-| POST   | `/api/users`         | Yes  | Create new user                     |
-| GET    | `/api/users/[id]`    | Yes  | Get single user by ID               |
-| PUT    | `/api/users/[id]`    | Yes  | Update user by ID                   |
-| DELETE | `/api/users/[id]`    | Yes  | Delete user by ID (cascades)        |
-| GET    | `/api/users/profile` | Yes  | Get current user's profile          |
-| PUT    | `/api/users/profile` | Yes  | Update current user's profile       |
+| Method | Endpoint                    | Auth   | Description                             |
+| ------ | --------------------------- | ------ | --------------------------------------- |
+| POST   | `/api/auth/login`           | No     | Login, returns JWT + user (incl. role)  |
+| POST   | `/api/auth/register`        | No     | Register with role, returns JWT + user  |
+| GET    | `/api/cart`                 | Yes    | Get user's active cart with items       |
+| POST   | `/api/cart`                 | Yes    | Add item to cart (or increment qty)     |
+| POST   | `/api/checkout`             | Yes    | Convert active cart → order (txn)       |
+| GET    | `/api/orders`               | Yes    | Get user's orders (desc by date)        |
+| GET    | `/api/users`                | Yes    | List all users (admin-like)             |
+| POST   | `/api/users`                | Yes    | Create new user                         |
+| GET    | `/api/users/[id]`           | Yes    | Get single user by ID                   |
+| PUT    | `/api/users/[id]`           | Yes    | Update user by ID                       |
+| DELETE | `/api/users/[id]`           | Yes    | Delete user by ID (cascades)            |
+| GET    | `/api/users/profile`        | Yes    | Get current user's profile (incl. role) |
+| PUT    | `/api/users/profile`        | Yes    | Update current user's profile           |
+| GET    | `/api/products`             | No     | List all active seller products         |
+| GET    | `/api/seller/products`      | Seller | List seller's own products              |
+| POST   | `/api/seller/products`      | Seller | Create a new product                    |
+| GET    | `/api/seller/products/[id]` | Seller | Get single product (own)                |
+| PUT    | `/api/seller/products/[id]` | Seller | Update product (own)                    |
+| DELETE | `/api/seller/products/[id]` | Seller | Delete product (own)                    |
 
 ---
 
 ## 6. Frontend Pages & Routing
 
-| Route             | File                          | Description                             |
-| ----------------- | ----------------------------- | --------------------------------------- |
-| `/`               | `app/page.tsx`                | Home: product grid + search bar         |
-| `/clothes`        | `app/clothes/page.tsx`        | Clothes category (reuses Home view)     |
-| `/electronics`    | `app/electronics/page.tsx`    | Electronics category (reuses Home view) |
-| `/jewelery`       | `app/jewelery/page.tsx`       | Jewelery category (reuses Home view)    |
-| `/others`         | `app/others/page.tsx`         | Others category (reuses Home view)      |
-| `/sign-in`        | `app/sign-in/page.tsx`        | Login form with Zod validation          |
-| `/my-account`     | `app/my-account/page.tsx`     | User profile (name, email)              |
-| `/my-orders`      | `app/my-orders/page.tsx`      | List of all orders                      |
-| `/my-orders/last` | `app/my-orders/last/page.tsx` | Last order detail                       |
-| `/my-orders/[id]` | `app/my-orders/[id]/page.tsx` | Order detail by index                   |
-| `/*` (404)        | `app/not-found.tsx`           | Custom 404 page                         |
+| Route                        | File                                     | Description                                       |
+| ---------------------------- | ---------------------------------------- | ------------------------------------------------- |
+| `/`                          | `app/page.tsx`                           | Home: product grid + search bar                   |
+| `/clothes`                   | `app/clothes/page.tsx`                   | Clothes category (reuses Home view)               |
+| `/electronics`               | `app/electronics/page.tsx`               | Electronics category (reuses Home view)           |
+| `/jewelery`                  | `app/jewelery/page.tsx`                  | Jewelery category (reuses Home view)              |
+| `/others`                    | `app/others/page.tsx`                    | Others category (reuses Home view)                |
+| `/sign-in`                   | `app/sign-in/page.tsx`                   | Login form (redirects sellers to dashboard)       |
+| `/sign-up`                   | `app/sign-up/page.tsx`                   | Registration with role selector (Customer/Seller) |
+| `/seller/dashboard`          | `app/seller/dashboard/page.tsx`          | Seller dashboard: stats + product table           |
+| `/seller/products/new`       | `app/seller/products/new/page.tsx`       | Create new product form                           |
+| `/seller/products/[id]/edit` | `app/seller/products/[id]/edit/page.tsx` | Edit/delete product                               |
+| `/my-account`                | `app/my-account/page.tsx`                | User profile (name, email)                        |
+| `/my-orders`                 | `app/my-orders/page.tsx`                 | List of all orders                                |
+| `/my-orders/last`            | `app/my-orders/last/page.tsx`            | Last order detail                                 |
+| `/my-orders/[id]`            | `app/my-orders/[id]/page.tsx`            | Order detail by index                             |
+| `/*` (404)                   | `app/not-found.tsx`                      | Custom 404 page                                   |
 
 ---
 
@@ -247,13 +289,15 @@ Manages user authentication state client-side.
 - **Actions:** `login()`, `register()`, `logout()`, `clearError()`
 - **Backend:** `AuthService` calls server API routes (`/api/auth/login`, `/api/auth/register`)
 - **Session:** JWT + user data stored in localStorage; validated on app load via `GET /api/users/profile`
-- **Demo user:** Seeded via `prisma db seed` (`demo@ecommerce.com` / `password123`)
+- **Demo users:** Seeded via `prisma db seed`:
+  - Customer: `demo@ecommerce.com` / `password123`
+  - Seller: `seller@ecommerce.com` / `password123`
 
 ### ProductContext (`src/context/product.tsx`)
 
 Manages products, cart, orders, and UI state.
 
-- **Products:** Fetched from FakeStore API via `useProducts` hook
+- **Products:** Fetched from FakeStore API + seller products from `/api/products` via `useProducts` hook
 - **Filtering:** `useFilters` hook — by title, category, or both
 - **Cart:** `useCart` hook — add, remove, checkout, clear (in-memory, not persisted to DB)
 - **UI:** Product detail sidebar, checkout side menu (toggle open/close)
@@ -288,7 +332,8 @@ Manages products, cart, orders, and UI state.
 | **ErrorFallback**    | `src/components/errorFallback/`    | Styled error display with retry button                                            |
 | **FormField**        | `src/components/formField/`        | Reusable input with label, error/success states, password toggle (eye icon)       |
 | **PasswordStrength** | `src/components/passwordStrength/` | Password strength bar + requirements checklist (real-time)                        |
-| **SuccessModal**     | `src/components/successModal/`     | Animated success modal with progress bar and auto-redirect                        |
+| **SuccessModal**     | `src/components/successModal/`     | Animated success modal with auto-redirect                                         |
+| **AuthSuccessToast** | `src/components/authSuccessToast/` | Reads `?welcome` query param and shows SuccessModal overlay on any page           |
 | **ProtectedRoute**   | `src/components/protectedRoute/`   | Legacy route guard (react-router-dom)                                             |
 | **Layout**           | `src/components/layout/`           | Legacy centered content wrapper                                                   |
 
@@ -296,17 +341,17 @@ Manages products, cart, orders, and UI state.
 
 ## 9. Custom Hooks
 
-| Hook                | File                             | Purpose                                                             |
-| ------------------- | -------------------------------- | ------------------------------------------------------------------- |
-| `useAuthContext`    | `src/hooks/useAuthContext.ts`    | Typed access to AuthContext                                         |
-| `useProductContext` | `src/hooks/useProductContext.ts` | Typed access to ProductContext                                      |
-| `useCart`           | `src/hooks/useCart.ts`           | Cart state + add/remove/checkout/clear                              |
-| `useFilters`        | `src/hooks/useFilters.ts`        | Product filtering (title, category, both)                           |
-| `useProducts`       | `src/hooks/useProducts.ts`       | Fetch products from FakeStore API                                   |
-| `useUI`             | `src/hooks/useUI.ts`             | UI toggles (standalone, used in legacy code)                        |
-| `useDocumentTitle`  | `src/hooks/useDocumentTitle.ts`  | Dynamic `<title>` with suffix                                       |
-| `useFormValidation` | `src/hooks/useFormValidation.ts` | Real-time Zod-based form validation (blur + onChange after touched) |
-| `useLocalStorage`   | `src/hooks/useLocalStorage.ts`   | Generic localStorage hook + `useAuth` (legacy)                      |
+| Hook                | File                             | Purpose                                                                  |
+| ------------------- | -------------------------------- | ------------------------------------------------------------------------ |
+| `useAuthContext`    | `src/hooks/useAuthContext.ts`    | Typed access to AuthContext                                              |
+| `useProductContext` | `src/hooks/useProductContext.ts` | Typed access to ProductContext                                           |
+| `useCart`           | `src/hooks/useCart.ts`           | Cart state + add/remove/checkout/clear                                   |
+| `useFilters`        | `src/hooks/useFilters.ts`        | Product filtering (title, category, both)                                |
+| `useProducts`       | `src/hooks/useProducts.ts`       | Fetch products from FakeStore API + seller products from `/api/products` |
+| `useUI`             | `src/hooks/useUI.ts`             | UI toggles (standalone, used in legacy code)                             |
+| `useDocumentTitle`  | `src/hooks/useDocumentTitle.ts`  | Dynamic `<title>` with suffix                                            |
+| `useFormValidation` | `src/hooks/useFormValidation.ts` | Real-time Zod-based form validation (blur + onChange after touched)      |
+| `useLocalStorage`   | `src/hooks/useLocalStorage.ts`   | Generic localStorage hook + `useAuth` (legacy)                           |
 
 ---
 
@@ -341,20 +386,20 @@ Manages products, cart, orders, and UI state.
 
 ## 12. Scripts
 
-| Script         | Command                         | Description                    |
-| -------------- | ------------------------------- | ------------------------------ |
-| `dev`          | `next dev`                      | Start Next.js dev server       |
-| `build`        | `prisma generate && next build` | Generate Prisma client + build |
-| `start`        | `next start`                    | Start production server        |
-| `lint`         | `eslint ...`                    | Lint all JS/TS/JSX/TSX files   |
-| `lint:fix`     | `eslint ... --fix`              | Auto-fix lint errors           |
-| `format`       | `prettier --write ...`          | Format all source files        |
-| `format:check` | `prettier --check ...`          | Check formatting               |
-| `type-check`   | `tsc --noEmit`                  | TypeScript type checking       |
-| `dev:vite`     | `vite`                          | Legacy Vite dev server         |
-| `build:vite`   | `tsc && vite build`             | Legacy Vite build              |
-| `prepare`      | `husky`                         | Setup git hooks                |
-| `prisma seed`  | `tsx prisma/seed.ts`            | Seed database with demo user   |
+| Script         | Command                         | Description                                                   |
+| -------------- | ------------------------------- | ------------------------------------------------------------- |
+| `dev`          | `next dev`                      | Start Next.js dev server                                      |
+| `build`        | `prisma generate && next build` | Generate Prisma client + build                                |
+| `start`        | `next start`                    | Start production server                                       |
+| `lint`         | `eslint ...`                    | Lint all JS/TS/JSX/TSX files                                  |
+| `lint:fix`     | `eslint ... --fix`              | Auto-fix lint errors                                          |
+| `format`       | `prettier --write ...`          | Format all source files                                       |
+| `format:check` | `prettier --check ...`          | Check formatting                                              |
+| `type-check`   | `tsc --noEmit`                  | TypeScript type checking                                      |
+| `dev:vite`     | `vite`                          | Legacy Vite dev server                                        |
+| `build:vite`   | `tsc && vite build`             | Legacy Vite build                                             |
+| `prepare`      | `husky`                         | Setup git hooks                                               |
+| `prisma seed`  | `tsx prisma/seed.ts`            | Seed database with demo customer, seller, and sample products |
 
 ---
 
