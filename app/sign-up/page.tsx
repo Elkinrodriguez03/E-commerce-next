@@ -86,7 +86,7 @@ function SignUp() {
               type="button"
               className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
                 role === 'SELLER'
-                  ? 'border-black bg-black text-white'
+                  ? 'border-emerald-600 bg-emerald-600 text-white'
                   : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
               }`}
               onClick={() => setRole('SELLER')}
@@ -148,10 +148,12 @@ function SignUp() {
 
         <button
           type="submit"
-          className="bg-black disabled:bg-gray-400 text-white w-full rounded-lg py-3 mb-4 hover:bg-gray-800 transition-colors"
+          className={`${
+            role === 'SELLER' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-black hover:bg-gray-800'
+          } disabled:bg-gray-400 text-white w-full rounded-lg py-3 mb-4 transition-colors`}
           disabled={isLoading}
         >
-          {isLoading ? 'Creating account...' : 'Sign Up'}
+          {isLoading ? 'Creating account...' : role === 'SELLER' ? 'Sign Up as Seller' : 'Sign Up'}
         </button>
       </form>
       <p className="mt-4 text-sm text-gray-600">

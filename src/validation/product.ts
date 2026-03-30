@@ -11,16 +11,24 @@ export const createProductSchema = z.object({
     .min(1, 'Description is required')
     .min(10, 'Description must be at least 10 characters')
     .max(2000, 'Description must be less than 2000 characters'),
-  price: z
-    .number()
+  price: z.coerce
+    .number({ message: 'Price must be a valid number' })
     .positive('Price must be greater than 0')
     .max(999999, 'Price must be less than $999,999'),
-  image: z.string().min(1, 'Image URL is required').url('Must be a valid URL'),
+  image: z
+    .string()
+    .min(1, 'Image is required')
+    .refine(val => val.startsWith('http') || val.startsWith('/uploads/'), {
+      message: 'Must be a valid URL or uploaded image',
+    }),
   category: z
     .string()
     .min(1, 'Category is required')
     .max(50, 'Category must be less than 50 characters'),
-  stock: z.number().int('Stock must be a whole number').min(0, 'Stock cannot be negative'),
+  stock: z.coerce
+    .number({ message: 'Stock must be a valid number' })
+    .int('Stock must be a whole number')
+    .min(0, 'Stock cannot be negative'),
   status: z.enum(['ACTIVE', 'DRAFT', 'ARCHIVED']).optional(),
 });
 
