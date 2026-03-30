@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 import { verifyToken } from '@/lib/auth';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -33,20 +31,10 @@ export async function POST(request: Request) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString('base64');
+    const url = `data:${file.type};base64,${base64}`;
 
-    // Generate unique filename
-    const ext = file.name.split('.').pop() || 'jpg';
-    const filename = `${user.id}-${Date.now()}.${ext}`;
-
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'products');
-    await mkdir(uploadDir, { recursive: true });
-
-    const filepath = path.join(uploadDir, filename);
-    await writeFile(filepath, buffer);
-
-    const url = `/uploads/products/${filename}`;
-
-    return NextResponse.json({ url, filename });
+    return NextResponse.json({ url });
   } catch (_error) {
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }

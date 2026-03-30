@@ -18,9 +18,12 @@ export const createProductSchema = z.object({
   image: z
     .string()
     .min(1, 'Image is required')
-    .refine(val => val.startsWith('http') || val.startsWith('/uploads/'), {
-      message: 'Must be a valid URL or uploaded image',
-    }),
+    .refine(
+      val => val.startsWith('http') || val.startsWith('/uploads/') || val.startsWith('data:image/'),
+      {
+        message: 'Must be a valid URL or uploaded image',
+      }
+    ),
   category: z
     .string()
     .min(1, 'Category is required')
