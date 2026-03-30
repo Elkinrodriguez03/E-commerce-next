@@ -75,7 +75,7 @@ function SellerDashboard() {
         </div>
         <Link
           href="/seller/products/new"
-          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm"
+          className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors text-sm"
         >
           <PlusIcon className="h-4 w-4" />
           Add Product
@@ -123,7 +123,7 @@ function SellerDashboard() {
             <p className="font-medium">No products yet</p>
             <p className="text-sm mt-1">
               Start by{' '}
-              <Link href="/seller/products/new" className="text-blue-500 hover:underline">
+              <Link href="/seller/products/new" className="text-emerald-600 hover:underline">
                 adding your first product
               </Link>
             </p>
@@ -163,7 +163,7 @@ function SellerDashboard() {
                     <td className="px-6 py-4">
                       <Link
                         href={`/seller/products/${product.id}/edit`}
-                        className="text-blue-500 hover:underline text-sm"
+                        className="text-emerald-600 hover:underline text-sm"
                       >
                         Edit
                       </Link>

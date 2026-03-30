@@ -9,6 +9,7 @@ import { createProductSchema } from '@/validation/product';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import FormField from '@/components/formField';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import ImageUpload from '@/components/imageUpload';
 
 function NewProduct() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuthContext();
@@ -22,10 +23,10 @@ function NewProduct() {
     initialValues: {
       title: '',
       description: '',
-      price: 0,
+      price: '' as unknown as number,
       image: '',
       category: '',
-      stock: 0,
+      stock: '' as unknown as number,
     },
   });
 
@@ -84,7 +85,7 @@ function NewProduct() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <Link
         href="/seller/dashboard"
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-black mb-6 transition-colors"
+        className="flex items-center gap-1 text-sm text-gray-500 hover:text-emerald-600 mb-6 transition-colors"
       >
         <ArrowLeftIcon className="h-4 w-4" />
         Back to Dashboard
@@ -164,14 +165,16 @@ function NewProduct() {
           />
         </div>
 
-        <FormField
-          label="Image URL"
-          type="url"
-          placeholder="https://example.com/image.jpg"
-          {...form.getFieldProps('image')}
+        <ImageUpload
+          value={form.values.image as string}
+          onChange={url => {
+            const syntheticEvent = {
+              target: { name: 'image', value: url },
+            } as React.ChangeEvent<HTMLInputElement>;
+            form.handleChange(syntheticEvent);
+          }}
           error={imageState.error}
           hasError={imageState.hasError}
-          isValid={imageState.isValid}
         />
 
         <FormField
@@ -215,7 +218,7 @@ function NewProduct() {
 
         <button
           type="submit"
-          className="bg-black disabled:bg-gray-400 text-white w-full rounded-lg py-3 hover:bg-gray-800 transition-colors"
+          className="bg-emerald-600 disabled:bg-gray-400 text-white w-full rounded-lg py-3 hover:bg-emerald-700 transition-colors"
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Creating...' : 'Create Product'}
