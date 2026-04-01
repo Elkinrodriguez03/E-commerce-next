@@ -44,8 +44,7 @@ function SignUp() {
 
     if (response.success) {
       redirecting.current = true;
-      const redirect =
-        role === 'SELLER' ? '/seller/dashboard?welcome=register' : '/?welcome=register';
+      const redirect = role === 'SELLER' ? '/admin?welcome=register' : '/?welcome=register';
       router.push(redirect);
     }
   };

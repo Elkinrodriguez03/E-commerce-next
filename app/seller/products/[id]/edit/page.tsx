@@ -53,25 +53,14 @@ function EditProduct() {
         });
         if (res.ok) {
           const product = await res.json();
-          // Populate form with existing data
-          form.getFieldProps('title').onChange({
-            target: { name: 'title', value: product.title },
-          } as React.ChangeEvent<HTMLInputElement>);
-          form.getFieldProps('description').onChange({
-            target: { name: 'description', value: product.description },
-          } as React.ChangeEvent<HTMLInputElement>);
-          form.getFieldProps('price').onChange({
-            target: { name: 'price', value: String(product.price) },
-          } as React.ChangeEvent<HTMLInputElement>);
-          form.getFieldProps('image').onChange({
-            target: { name: 'image', value: product.image },
-          } as React.ChangeEvent<HTMLInputElement>);
-          form.getFieldProps('category').onChange({
-            target: { name: 'category', value: product.category },
-          } as React.ChangeEvent<HTMLInputElement>);
-          form.getFieldProps('stock').onChange({
-            target: { name: 'stock', value: String(product.stock) },
-          } as React.ChangeEvent<HTMLInputElement>);
+          form.populateValues({
+            title: product.title,
+            description: product.description,
+            price: String(product.price) as unknown as number,
+            image: product.image,
+            category: product.category,
+            stock: String(product.stock) as unknown as number,
+          });
           setStatus(product.status);
         } else {
           setSubmitError('Product not found');

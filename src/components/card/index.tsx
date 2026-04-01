@@ -13,12 +13,16 @@ const Card = memo(function Card({ data }: CardProps) {
   const { openProductDetail, setProductToShow, cartProducts, addToCart, removeFromCart } =
     useProductContext();
 
+  const isOutOfStock = data.stock !== undefined && data.stock <= 0;
+
   const showProduct = (productDetail: Product) => {
     openProductDetail();
     setProductToShow(productDetail);
   };
 
   const renderIcon = (id: number | string) => {
+    if (isOutOfStock) return null;
+
     const isInCart = cartProducts.filter(product => product.id === id).length > 0;
 
     if (isInCart) {
@@ -50,8 +54,17 @@ const Card = memo(function Card({ data }: CardProps) {
         <span className="absolute bottom-0 left-0 bg-gray-200 rounded-lg text-black text-xs m-3 px-3 py-0.5">
           {data.category}
         </span>
+        {isOutOfStock ? (
+          <span className="absolute top-0 left-0 bg-red-500 text-white text-xs font-semibold m-3 px-3 py-1 rounded-lg z-10">
+            Out of Stock
+          </span>
+        ) : data.stock !== undefined && data.stock > 0 && data.stock < 5 ? (
+          <span className="absolute top-0 left-0 bg-orange-400 text-white text-xs font-semibold m-3 px-3 py-1 rounded-lg z-10">
+            Only {data.stock} left
+          </span>
+        ) : null}
         <img
-          className="w-full h-full object-scale-down rounded-lg"
+          className={`w-full h-full object-scale-down rounded-lg ${isOutOfStock ? 'opacity-50' : ''}`}
           src={data.image}
           alt={data.title}
           onClick={() => showProduct(data)}

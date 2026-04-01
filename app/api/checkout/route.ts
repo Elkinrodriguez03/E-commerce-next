@@ -28,8 +28,25 @@ export async function POST(request: Request) {
     // Calculate total
     const totalAmount = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-    // Create order
+    // Create order and decrement stock for seller products
     const order = await prisma.$transaction(async tx => {
+      // Decrement stock for seller products
+      for (const item of cart.items) {
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+          select: { id: true, stock: true },
+        });
+        if (product) {
+          if (product.stock < (item.quantity || 1)) {
+            throw new Error(`Insufficient stock for "${item.title}"`);
+          }
+          await tx.product.update({
+            where: { id: product.id },
+            data: { stock: { decrement: item.quantity || 1 } },
+          });
+        }
+      }
+
       // Create the order
       const newOrder = await tx.order.create({
         data: {

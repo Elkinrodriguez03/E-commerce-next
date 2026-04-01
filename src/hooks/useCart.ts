@@ -28,6 +28,19 @@ export const useCart = () => {
       totalPrice: totalPrice(cartProducts),
     };
 
+    // Decrement stock for seller products (string UUIDs, not numeric FakeStore IDs)
+    const sellerItems = cartProducts
+      .filter(p => typeof p.id === 'string')
+      .map(p => ({ productId: String(p.id), quantity: p.quantity || 1 }));
+
+    if (sellerItems.length > 0) {
+      fetch('/api/products/stock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: sellerItems }),
+      }).catch(() => {});
+    }
+
     setOrder([...order, orderToAdd]);
     setCartProducts([]);
     setCounter(0);

@@ -77,6 +77,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const addToCart = useCallback(
     (event: React.MouseEvent, product: Product) => {
       event.stopPropagation();
+      if (product.stock !== undefined && product.stock <= 0) return;
       addProductsToCart(event, product as CartItem);
       openCheckoutSideMenu();
       closeProductDetail();
