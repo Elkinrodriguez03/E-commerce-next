@@ -32,14 +32,40 @@ function ProductDetail() {
         <span className="font-medium text-2x1 mb-2">${productToShow.price}</span>
         <span className="font-medium text-md">{productToShow.title}</span>
         <span className="font-light text-xs">{productToShow.description}</span>
+        {productToShow.stock !== undefined && (
+          <span
+            className={`text-xs font-medium mt-2 ${
+              productToShow.stock <= 0
+                ? 'text-red-500'
+                : productToShow.stock < 5
+                  ? 'text-orange-500'
+                  : 'text-green-600'
+            }`}
+          >
+            {productToShow.stock <= 0
+              ? 'Out of Stock'
+              : productToShow.stock < 5
+                ? `Only ${productToShow.stock} left — order soon`
+                : `${productToShow.stock} in stock`}
+          </span>
+        )}
       </p>
       <div className="items-center p-6 fixed bottom-0 left-0 right-0 md:absolute">
-        <button
-          className="bg-black py-3 text-white w-full rounded-lg"
-          onClick={event => addToCart(event, productToShow)}
-        >
-          Add to Cart
-        </button>
+        {productToShow.stock !== undefined && productToShow.stock <= 0 ? (
+          <button
+            className="bg-gray-300 py-3 text-gray-500 w-full rounded-lg cursor-not-allowed"
+            disabled
+          >
+            Out of Stock
+          </button>
+        ) : (
+          <button
+            className="bg-black py-3 text-white w-full rounded-lg"
+            onClick={event => addToCart(event, productToShow)}
+          >
+            Add to Cart
+          </button>
+        )}
       </div>
     </aside>
   );

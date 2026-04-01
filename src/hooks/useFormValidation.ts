@@ -139,6 +139,13 @@ export function useFormValidation<T extends Record<string, unknown>>({
     [fieldStates, errors, submitAttempted]
   );
 
+  const populateValues = useCallback((newValues: Partial<T>) => {
+    setValues(prev => ({ ...prev, ...newValues }));
+    setErrors({});
+    setFieldStates({});
+    setSubmitAttempted(false);
+  }, []);
+
   const reset = useCallback(() => {
     setValues(initialValues);
     setErrors({});
@@ -154,6 +161,7 @@ export function useFormValidation<T extends Record<string, unknown>>({
     validateAll,
     getFieldProps,
     getFieldState,
+    populateValues,
     reset,
     submitAttempted,
   };

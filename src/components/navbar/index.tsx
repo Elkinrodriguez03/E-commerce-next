@@ -47,13 +47,9 @@ function Navbar() {
           <li className="text-black/60">{user?.email || 'demo@ecommerce.com'}</li>
           {isSeller ? (
             <>
+              <NavItem href="/admin" label="Dashboard" onClick={() => closeMenuAndDoAction()} />
               <NavItem
-                href="/seller/dashboard"
-                label="Dashboard"
-                onClick={() => closeMenuAndDoAction()}
-              />
-              <NavItem
-                href="/seller/products/new"
+                href="/admin/products/new"
                 label="Add Product"
                 onClick={() => closeMenuAndDoAction()}
               />

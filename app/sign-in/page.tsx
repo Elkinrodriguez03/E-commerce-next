@@ -74,7 +74,7 @@ function SignIn() {
     if (response.success) {
       redirecting.current = true;
       const isSeller = response.user?.role === 'SELLER';
-      const redirect = isSeller ? '/seller/dashboard?welcome=login' : '/?welcome=login';
+      const redirect = isSeller ? '/admin?welcome=login' : '/?welcome=login';
       router.push(redirect);
     }
   };
