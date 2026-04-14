@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { Providers } from './providers';
-import Navbar from '@/components/navbar';
+import { TopBar, MobileBottomTabBar } from '@/components/topBar';
 import CheckoutSideMenu from '@/components/checkoutSideMenu';
 import AuthSuccessToast from '@/components/authSuccessToast';
 import './globals.css';
@@ -17,8 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <Providers>
-          <Navbar />
-          <main className="mt-20">{children}</main>
+          <TopBar />
+          <main className="pb-bottom-tab md:pb-0">{children}</main>
+          <MobileBottomTabBar />
           <CheckoutSideMenu />
           <Suspense fallback={null}>
             <AuthSuccessToast />

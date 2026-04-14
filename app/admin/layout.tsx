@@ -33,11 +33,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <>
-      {/* Hide the global buyer navbar + checkout menu via CSS */}
+      {/* Hide the global buyer top bar, bottom tab bar, category nav, and checkout menu */}
       <style>{`
+        body > div > header,
         body > div > nav,
         body > div > aside { display: none !important; }
-        body > div > main { margin-top: 0 !important; }
+        body > div > main {
+          margin-top: 0 !important;
+          padding-bottom: 0 !important;
+        }
       `}</style>
 
       <AdminTopBar onToggleSidebar={toggleSidebar} />
