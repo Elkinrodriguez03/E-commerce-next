@@ -20,3 +20,15 @@ body {
 .animate-slide-up {
   animation: slide-up 0.2s ease-out;
 }
+
+/* Safe area for mobile bottom tab bar */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Extra bottom padding on mobile so content isn't hidden behind bottom tab bar */
+@media (max-width: 767px) {
+  .pb-bottom-tab {
+    padding-bottom: 4.5rem;
+  }
+}
