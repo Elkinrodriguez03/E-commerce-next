@@ -4,20 +4,34 @@ import { memo } from 'react';
 import { useProductContext } from '@/context';
 import { Product } from '@/types';
 import { CheckIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { Heart } from 'lucide-react';
 
 interface CardProps {
   data: Product;
 }
 
 const Card = memo(function Card({ data }: CardProps) {
-  const { openProductDetail, setProductToShow, cartProducts, addToCart, removeFromCart } =
-    useProductContext();
+  const {
+    openProductDetail,
+    setProductToShow,
+    cartProducts,
+    addToCart,
+    removeFromCart,
+    toggleFavorite,
+    isFavorite,
+  } = useProductContext();
 
   const isOutOfStock = data.stock !== undefined && data.stock <= 0;
+  const liked = isFavorite(data.id);
 
   const showProduct = (productDetail: Product) => {
     openProductDetail();
     setProductToShow(productDetail);
+  };
+
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleFavorite(data);
   };
 
   const renderIcon = (id: number | string) => {
@@ -71,6 +85,18 @@ const Card = memo(function Card({ data }: CardProps) {
           loading="lazy"
         />
         {renderIcon(data.id)}
+        <button
+          className={`absolute top-0 left-0 flex justify-center items-center w-7 h-7 rounded-full m-3 p-1 transition-colors ${
+            liked ? 'bg-red-50' : 'bg-white/80 hover:bg-white'
+          }`}
+          onClick={handleFavorite}
+          aria-label={liked ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          <Heart
+            className={`w-4 h-4 transition-colors ${liked ? 'text-red-500 fill-red-500' : 'text-gray-500'}`}
+            strokeWidth={2}
+          />
+        </button>
       </figure>
       <p className="flex flex-col md:flex-row justify-between px-5 pb-5">
         <span className="text-xs font-light">{data.title}</span>
