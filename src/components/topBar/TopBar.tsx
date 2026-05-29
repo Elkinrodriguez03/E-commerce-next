@@ -11,7 +11,8 @@ import ScopedSearch from './ScopedSearch';
 export default function TopBar() {
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuthContext();
-  const { cartProducts, openCheckoutSideMenu, setSearchByCategory } = useProductContext();
+  const { cartProducts, openCheckoutSideMenu, setSearchByCategory, favoritesCount } =
+    useProductContext();
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -72,12 +73,18 @@ export default function TopBar() {
               )}
 
               {/* Wishlist */}
-              <button
+              <Link
+                href="/favorites"
                 className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors relative"
-                aria-label="Wishlist"
+                aria-label={`Favorites, ${favoritesCount} items`}
               >
                 <Heart className="h-5 w-5" strokeWidth={1.8} />
-              </button>
+                {favoritesCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full px-1">
+                    {favoritesCount > 99 ? '99+' : favoritesCount}
+                  </span>
+                )}
+              </Link>
 
               {/* Cart */}
               <button

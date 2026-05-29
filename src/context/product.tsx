@@ -3,6 +3,7 @@ import { CartItem, Order, Product } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { useFilters } from '@/hooks/useFilters';
 import { useProducts } from '@/hooks/useProducts';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface ProductContextType {
   // Products data
@@ -26,6 +27,12 @@ interface ProductContextType {
   // Orders
   order: Order[];
   handleCheckout: () => void;
+
+  // Favorites
+  favorites: Product[];
+  toggleFavorite: (product: Product) => void;
+  isFavorite: (id: number | string) => boolean;
+  favoritesCount: number;
 
   // UI state
   isProductDetailOpen: boolean;
@@ -53,6 +60,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const { items, loading, error } = useProducts();
   const { filteredItems, searchByTitle, setSearchByTitle, searchByCategory, setSearchByCategory } =
     useFilters(items);
+  const { favorites, toggleFavorite, isFavorite, favoritesCount } = useFavorites();
 
   const {
     cartProducts,
@@ -109,6 +117,10 @@ export function ProductProvider({ children }: { children: ReactNode }) {
         clearCart,
         order,
         handleCheckout,
+        favorites,
+        toggleFavorite,
+        isFavorite,
+        favoritesCount,
         isProductDetailOpen,
         openProductDetail,
         closeProductDetail,

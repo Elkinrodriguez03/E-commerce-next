@@ -24,7 +24,7 @@ export default function MobileBottomTabBar() {
   const tabs: TabItem[] = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/my-orders', label: 'Orders', icon: Package },
-    { href: '#wishlist', label: 'Saved', icon: Heart },
+    { href: '/favorites', label: 'Saved', icon: Heart },
     {
       href: '#cart',
       label: 'Cart',
